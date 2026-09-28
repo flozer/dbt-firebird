@@ -212,6 +212,45 @@ Isso criou a **tabela `clientes`** no seu banco (o nome do modelo vira o nome
 da tabela). Mude o modelo para `select 1 as id` e rode de novo — o dbt
 substitui a tabela pelos dados novos.
 
+### Onde estão as tabelas criadas pelo dbt?
+
+No Firebird, identificadores escritos **sem aspas** no SQL são convertidos
+para MAIÚSCULAS. O dbt (convenção de todos os adaptadores, igual faz no
+Postgres) cria seus objetos com o nome **entre aspas e em minúsculas** —
+o modelo `clientes` vira a tabela `"clientes"`. Consequências práticas:
+
+```sql
+select * from "clientes";   -- ✅ correto (com aspas)
+select * from clientes;     -- ❌ procura CLIENTES, que não existe
+```
+
+Ferramentas gráficas (FlameRobin, IBExpert, DBeaver) mostram os nomes
+minúsculos na lista de tabelas — costumam aparecer agrupados após os nomes
+maiúsculos legados. Consultas que juntam tabelas dbt com tabelas reais
+funcionam normalmente misturando os dois estilos:
+
+```sql
+select c.customer_name, g.descricao
+from "marts_customers" c
+join ENG_GRUMAT g on g.tag = c.grupo_tag
+```
+
+**Prefere nomes no estilo Firebird (sem aspas/maiúsculos)?** Configure o
+`alias` do modelo/seed em maiúsculas — o dbt criará `"TABELA"`, que é
+exatamente o nome que uma consulta sem aspas encontra:
+
+```sql
+-- dbt_project.yml
+seeds:
+  meu_projeto:
+    store:
+      +alias: STORE
+```
+
+> Se já existir a versão minúscula (`"store"`), **derrube-a antes** de
+> mudar o alias — o dbt se recusa a adivinhar entre duas tabelas que só
+> diferem no caso do nome.
+
 ## O que cada materialização faz
 
 A materialização é como o dbt materializa o modelo no banco. Configure por
@@ -385,6 +424,7 @@ repetidas sem mudanças não alteram nada.
 | `deadlock / update conflicts with concurrent update` | Outra transação (aplicação, outro modelo em paralelo, trigger de auditoria) alterou a mesma linha/página enquanto o dbt escrevia | **O adaptador já contorna automaticamente**: transações em READ COMMITTED + `lock_timeout` de espera + até 3 tentativas com backoff. Se ainda ocorrer, reduza a concorrência (`threads: 1`) ou aumente `lock_timeout` no profile |
 | Nomes de modelo com +31 caracteres no Firebird 3 | Limite de identificador de 31 bytes do FB3 | Encurte o nome (FB4/5 aceitam 63) |
 | `Table unknown` logo após `CREATE` no mesmo script | DDL não é visível ao DML na mesma transação | É o dbt que orquestra — se acontecer em hooks, comite entre eles |
+| "A tabela do meu modelo/seed não existe no banco" | Ela existe, em **minúsculas e com aspas** (`"store"`); consulta sem aspas procura `STORE` | Consulte com aspas (`select * from "store"`) — ver seção [Onde estão as tabelas criadas pelo dbt?](#onde-estão-as-tabelas-criadas-pelo-dbt) |
 
 ## Como o adaptador funciona por dentro
 
