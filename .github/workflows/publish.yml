@@ -50,7 +50,7 @@ jobs:
     permissions:
       id-token: write  # credenciais OIDC do Trusted Publishing — sem senha/token PyPI
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
