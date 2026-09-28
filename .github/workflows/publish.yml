@@ -1,0 +1,58 @@
+name: Publish to PyPI
+
+# Disparo APENAS manual (botão "Run workflow"). Nada é publicado
+# automaticamente — ver RELEASE.md para o procedimento completo.
+#
+# PRÉ-REQUISITO (uma única vez, feito pelo dono da conta PyPI):
+#   Registrar o Trusted Publisher em https://pypi.org/manage/account/publishing/
+#     PyPI project:      dbt-firebird
+#     Owner:             flozer
+#     Repository:        dbt-firebird
+#     Workflow name:     publish.yml
+#     Environment name:  pypi
+#
+# Para publicar por tag também (opcional), adicione:
+#   on:
+#     push:
+#       tags: ['v*']
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build sdist and wheel
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+          python -m build
+      - name: Check metadata
+        run: |
+          pip install twine
+          twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    # o environment 'pypi' deve existir no repo (Settings > Environments);
+    # pode ser configurado com "required reviewers" para aprovação dupla
+    environment: pypi
+    permissions:
+      id-token: write  # credenciais OIDC do Trusted Publishing — sem senha/token PyPI
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

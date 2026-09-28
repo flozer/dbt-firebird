@@ -1,5 +1,7 @@
 # dbt-firebird
 
+[![CI](https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml/badge.svg)](https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml)
+
 Adaptador [dbt](https://www.getdbt.com/) para o banco de dados
 [Firebird](https://firebirdsql.org/), construído sobre o driver oficial
 [firebird-driver](https://pypi.org/project/firebird-driver/).
