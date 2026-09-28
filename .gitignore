@@ -25,3 +25,4 @@ partial_parse.msgpack
 # Perfis com caminhos/credenciais locais
 profiles.yml
 example/.user.yml
+RELEASE.md
