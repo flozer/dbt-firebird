@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dbt-firebird"
+version = "0.1.0"
+description = "Adaptador dbt (dbt-core) para o banco de dados Firebird, via firebird-driver"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{ name = "dbt-firebird contributors" }]
+requires-python = ">=3.9"
+keywords = ["dbt", "firebird", "adapter", "data engineering"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+]
+dependencies = [
+    "dbt-adapters>=1.6,<2.0",
+    "dbt-common>=1.0,<2.0",
+    "firebird-driver>=1.10,<2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/flozer/dbt-firebird"
+Repository = "https://github.com/flozer/dbt-firebird"
+Issues = "https://github.com/flozer/dbt-firebird/issues"
+Changelog = "https://github.com/flozer/dbt-firebird/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "dbt-core>=1.8,<2.0",
+    "dbt-tests-adapter>=1.6,<2.0",
+    "pytest>=7",
+    "pytest-dotenv",
+]
+
+[tool.setuptools.packages.find]
+include = ["dbt.adapters.firebird", "dbt.adapters.firebird.*", "dbt.include.firebird", "dbt.include.firebird.*"]
+
+[tool.setuptools.package-data]
+"dbt.include.firebird" = ["dbt_project.yml", "profile_template.yml", "macros/**/*.sql"]
+
+[tool.pytest.ini_options]
+env_files = ["test.env"]
+testpaths = ["tests"]

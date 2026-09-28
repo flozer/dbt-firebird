@@ -1,0 +1,13 @@
+fixed:
+  type: firebird
+  host: localhost
+  port: 3050
+  user: '{{ env_var("FB_USER") }}'
+  password: '{{ env_var("FB_PASSWORD") }}'
+prompts:
+  path:
+    hint: 'Caminho do arquivo .fdb visto PELO SERVIDOR (ex: D:/dados/mydb.fdb)'
+  threads:
+    hint: 'Numero de threads (1 recomendado)'
+    type: int
+    default: 1

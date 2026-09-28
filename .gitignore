@@ -1,0 +1,27 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# dbt
+target/
+logs/
+db_packages/
+partial_parse.msgpack
+
+# Bancos de dados locais
+*.fdb
+
+# pytest
+.pytest_cache/
+
+# Sessoes de ferramentas locais
+.zcode/
+.zcodeignore
+
+# Perfis com caminhos/credenciais locais
+profiles.yml
+example/.user.yml
