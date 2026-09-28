@@ -1,0 +1,61 @@
+name: CI
+
+# Execucao manual (fase de testes). Para automatizar, adicione:
+#   push:
+#     branches: [main]
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        firebird-version: ['v5', 'v4', 'v3']
+        python-version: ['3.12', '3.9']
+
+    services:
+      firebird:
+        image: jacobalberty/firebird:${{ matrix.firebird-version }}
+        env:
+          ISC_PASSWORD: masterkey
+        ports:
+          - 3050:3050
+
+    env:
+      # caminho do banco de testes DENTRO do container do Firebird
+      FIREBIRD_TEST_DB_PATH: /firebird/data/db_test.fdb
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Firebird client library
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libfbclient2
+          sudo ln -sf /usr/lib/x86_64-linux-gnu/libfbclient.so.2 /usr/lib/x86_64-linux-gnu/libfbclient.so
+
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+
+      - name: Wait for Firebird
+        run: |
+          for i in $(seq 1 30); do
+            if (echo > /dev/tcp/localhost/3050) 2>/dev/null; then
+              echo "porta 3050 respondendo (tentativa $i)"
+              break
+            fi
+            sleep 2
+          done
+          sleep 10
+
+      - name: Run adapter test suites
+        run: pytest tests/adapter -v --no-header

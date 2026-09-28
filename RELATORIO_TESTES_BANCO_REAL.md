@@ -2,7 +2,7 @@
 
 **Data:** 26/09/2026
 **Ambiente:** máquina local (DEV), Windows, Firebird 5.0.3 (serviço na porta 3050)
-**Base testada:** `C:\bases\restaurado.fdb` (~66 GB, 3.144 tabelas/views de usuário, charset `NONE`, dados em WIN1252)
+**Base testada:** `C:\bases\restaurado.fdb` (caminho de teste; ~66 GB, 3.144 tabelas/views de usuário, charset `NONE`, dados em WIN1252)
 **Credenciais:** SYSDBA / masterkey
 **Software:** dbt-core 1.12.5 + dbt-firebird 0.1.0 instalados no Python do sistema (3.12) a partir do código-fonte local
 
