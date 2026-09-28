@@ -91,21 +91,26 @@ class FirebirdConnectionManager(SQLConnectionManager):
             return connection
 
         credentials: FirebirdCredentials = connection.credentials
-        try:
-            connection.handle = fdb.connect(
+
+        def connect():
+            return fdb.connect(
                 credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
                 charset=credentials.charset,
                 role=credentials.role,
             )
-            connection.state = ConnectionState.OPEN
-        except Exception as e:
-            logger.debug("Error connecting to Firebird: {}", e)
-            connection.handle = None
-            connection.state = ConnectionState.FAIL
-            raise FailedToConnectError(f"Failed to connect to Firebird at {credentials.dsn}: {e}")
-        return connection
+
+        # retry_connection registra o handle/estado e converte falhas
+        # persistentes em FailedToConnectError; erros transientes (rede,
+        # servidor reiniciando) ganham 1 retry
+        return cls.retry_connection(
+            connection,
+            connect=connect,
+            logger=logger,
+            retryable_exceptions=(fdb.OperationalError, fdb.InterfaceError),
+            retry_limit=1,
+        )
 
     def cancel(self, connection: Connection) -> None:
         # firebird-driver nao expoe cancelamento assincrono de statement.
@@ -123,6 +128,17 @@ class FirebirdConnectionManager(SQLConnectionManager):
             logger.debug("Unexpected error running Firebird query: {}", sql)
             logger.debug("Traceback: {}", traceback.format_exc())
             raise DbtRuntimeError(str(e)) from e
+
+    @classmethod
+    def _rollback_handle(cls, connection: Connection) -> None:
+        # o firebird-driver dispara assert no rollback de transacao inativa;
+        # statements que falham no PREPARE comitam a transacao de preparo que
+        # eles mesmos abriram, deixando-a inativa
+        handle = connection.handle
+        tx = getattr(handle, "main_transaction", None)
+        if tx is not None and not tx.is_active():
+            return
+        super()._rollback_handle(connection)
 
     @classmethod
     def get_response(cls, cursor) -> AdapterResponse:
@@ -150,10 +166,20 @@ class FirebirdConnectionManager(SQLConnectionManager):
         return connection, None
 
     def commit(self):
-        # as materializations deste adaptador commitam explicitamente entre
-        # DDL e DML (regra de snapshot de metadados); commits "sobrando" no
-        # fim sao no-op em vez de erro.
+        """Commit real sempre que houver transacao ativa no driver.
+
+        As materializations deste adaptador commitam explicitamente entre DDL
+        e DML (regra de snapshot de metadados) e o fluxo do dbt emite commits
+        "sobrando" no fim — em vez de depender da flag transaction_open
+        (que dessincroniza com as transacoes implicitas do Firebird), comitamos
+        com base no estado REAL da transacao no driver.
+        """
         connection = self.get_if_exists()
-        if connection is None or connection.transaction_open is False:
+        if connection is None:
             return connection
-        return super().commit()
+        handle = connection.handle
+        tx = getattr(handle, "main_transaction", None)
+        if tx is not None and tx.is_active():
+            handle.commit()
+        connection.transaction_open = False
+        return connection

@@ -29,3 +29,27 @@
 {% macro get_snapshot_get_time_data_type() %}
   {{ return('TIMESTAMP') }}
 {% endmacro %}
+
+
+{#
+    O default usa `explain`, que o Firebird não suporta da mesma forma.
+    Valida a query preparando-a sem executar linhas.
+#}
+{% macro firebird__validate_sql(sql) -%}
+  {%- call statement('validate_sql', fetch_result=True, auto_begin=False) -%}
+    select first 0 * from (
+      {{ sql }}
+    ) dbt_sbq
+  {%- endcall -%}
+  {{ return(load_result('validate_sql')) }}
+{%- endmacro %}
+
+
+{#
+    Converte string para literal de timestamp (usada por snapshots quando o
+    `updated_at` configurado é um literal).
+#}
+{% macro firebird__snapshot_string_as_time(timestamp) %}
+  {%- set escaped = timestamp | string | replace("'", "''") -%}
+  {{ return("TIMESTAMP '" ~ escaped ~ "'") }}
+{% endmacro %}

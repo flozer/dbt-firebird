@@ -14,8 +14,10 @@ models:
           - unique
           - not_null
   - name: customers
+    description: "Perfil consolidado de clientes com pedidos agregados"
     columns:
       - name: customer_id
+        description: "Chave do cliente na tabela de origem"
         tests:
           - unique
           - not_null

@@ -5,6 +5,13 @@ from dbt.tests.adapter.basic.test_base import BaseSimpleMaterializations
 from dbt.tests.adapter.basic.test_incremental import BaseIncremental
 from dbt.tests.adapter.basic.test_generic_tests import BaseGenericTests
 from dbt.tests.adapter.basic.test_empty import BaseEmpty
+from dbt.tests.adapter.basic.test_ephemeral import BaseEphemeral
+from dbt.tests.adapter.basic.test_singular_tests_ephemeral import (
+    BaseSingularTestsEphemeral,
+)
+from dbt.tests.adapter.basic.test_validate_connection import (
+    BaseValidateConnection,
+)
 from dbt.tests.adapter.basic.test_docs_generate import BaseDocsGenerate
 from dbt.tests.adapter.basic.test_table_materialization import (
     BaseTableMaterialization,
@@ -66,6 +73,28 @@ class TestGenericTests(BaseGenericTests):
 
 
 class TestEmpty(BaseEmpty):
+    pass
+
+
+@pytest.mark.skip(reason="o core gera CTEs de modelos ephemeral com o nome fixo "
+                  "'__dbt__cte__...' (sem aspas); o Firebird não aceita "
+                  "identificadores não-quotados começando com '_'")
+class TestEphemeral(BaseEphemeral):
+    pass
+
+
+@pytest.mark.skip(reason="mesma limitação de CTE do TestEphemeral")
+class TestSingularTestsEphemeral(BaseSingularTestsEphemeral):
+    pass
+
+
+class TestValidateConnection(BaseValidateConnection):
+    pass
+
+
+@pytest.mark.skip(reason="a suíte compara nomes exatos de tipos do catálogo; o "
+                  "Firebird retorna VARCHAR(n) dimensionado pelos dados")
+class TestDocsGenerate(BaseDocsGenerate):
     pass
 
 
