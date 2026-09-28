@@ -1,19 +1,27 @@
-# dbt-firebird
+<div align="center">
+  <h1>dbt-firebird</h1>
+  <p><strong>Execute <a href="https://github.com/dbt-labs/dbt-core">dbt-core</a> diretamente em bancos <a href="https://firebirdsql.org/">Firebird</a>.</strong></p>
+  <p><em>O primeiro adaptador dbt para o Firebird — construído sobre o driver
+    oficial <a href="https://pypi.org/project/firebird-driver/">firebird-driver</a>.</em></p>
+  <p>
+    Modelos SQL versionados, testes de qualidade de dados, documentação gerada,
+    snapshots (SCD2) e materializações incrementais para Firebird 3.0, 4.0 e
+    5.0 — transações corretas, swap atômico de tabelas e tolerância a
+    concorrência.
+  </p>
+  <p>
+    <a href="LICENSE"><img alt="license Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-green.svg"></a>
+    <a href="https://github.com/flozer/dbt-firebird/releases/tag/v0.1.1"><img alt="release v0.1.1" src="https://img.shields.io/badge/release-v0.1.1-blue.svg"></a>
+    <a href="https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml/badge.svg"></a>
+    <a href="https://pypi.org/project/dbt-firebird/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/dbt-firebird"></a>
+    <a href="https://pypi.org/project/dbt-firebird/"><img alt="PyPI downloads/mês" src="https://img.shields.io/pypi/dm/dbt-firebird"></a>
+  </p>
+</div>
 
-[![CI](https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml/badge.svg)](https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml)
-
-Adaptador [dbt](https://www.getdbt.com/) para o banco de dados
-[Firebird](https://firebirdsql.org/), construído sobre o driver oficial
-[firebird-driver](https://pypi.org/project/firebird-driver/).
-
-Permite usar o dbt-core (versões 1.8+) com bancos Firebird 3.0, 4.0 e 5.0:
-modelos SQL versionados, testes de qualidade de dados, documentação gerada,
-snapshots (histórico de mudanças) e materializações incrementais — tudo direto
-no seu banco Firebird.
-
-> **Status:** versão 0.1.0, validada contra Firebird 5.0.3 (incluindo uma base
+> **Status:** versão 0.1.1, validada contra Firebird 5.0.3 (incluindo uma base
 > real de ~66 GB com 3.144 tabelas — ver
-> [`RELATORIO_TESTES_BANCO_REAL.md`](RELATORIO_TESTES_BANCO_REAL.md)).
+> [`RELATORIO_TESTES_BANCO_REAL.md`](RELATORIO_TESTES_BANCO_REAL.md)) e pela
+> matriz de CI Firebird 3/4/5 × Python 3.9/3.12.
 
 ---
 
@@ -47,14 +55,12 @@ no seu banco Firebird.
 
 ## Instalação
 
-Ainda não está no PyPI. Instale direto do repositório:
-
 ```bash
-pip install git+https://github.com/flozer/dbt-firebird.git
+pip install dbt-firebird
 ```
 
-Isso instala o adaptador **e** as dependências (`dbt-adapters`, `firebird-driver`).
-O `dbt-core` deve ser instalado junto:
+Isso instala o adaptador **e** as dependências (`dbt-adapters`,
+`firebird-driver`). Instale também o `dbt-core`:
 
 ```bash
 pip install dbt-core
@@ -65,7 +71,14 @@ A saída deve listar o adaptador:
 
 ```
 Plugins:
-  - firebird: 0.1.0
+  - firebird: 0.1.1
+```
+
+Alternativa, instalando direto do código-fonte (para testar mudanças não
+publicadas):
+
+```bash
+pip install git+https://github.com/flozer/dbt-firebird.git
 ```
 
 ## Preparando um banco de teste
@@ -493,6 +506,22 @@ roda a matriz Firebird 3/4/5 × Python 3.9/3.12) e as regras do dialeto.
 Projeto de exemplo completo em [`example/`](example/) e relatório de testes
 contra base real de produção em
 [`RELATORIO_TESTES_BANCO_REAL.md`](RELATORIO_TESTES_BANCO_REAL.md).
+
+## Autor
+
+**Fernando Lozer** — GitHub [@flozer](https://github.com/flozer) ·
+LinkedIn [/fernandolozer](https://www.linkedin.com/in/fernandolozer)
+
+<div align="center">
+  <h2>Apoie o projeto</h2>
+  <p>Se o dbt-firebird ajuda o seu trabalho, considere apoiar o desenvolvimento contínuo.</p>
+  <a href="https://buymeacoffee.com/fernandolozer">
+    <img
+      src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+      alt="Apoie Fernando Lozer no Buy Me a Coffee"
+      height="50">
+  </a>
+</div>
 
 ## Licença
 
