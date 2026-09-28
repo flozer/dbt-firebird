@@ -235,6 +235,14 @@ from "marts_customers" c
 join ENG_GRUMAT g on g.tag = c.grupo_tag
 ```
 
+> **Nota sobre IBExpert e afins:** os objetos minúsculos **estão**
+> registrados no catálogo (mesmos metadados das tabelas maiúsculas:
+> `relation_type`, `system_flag`, owner idênticos) e funcionam por SQL —
+> só são fáceis de perder de vista na árvore do explorador, porque na
+> ordenação por bytes aparecem **depois de todos os nomes maiúsculos**.
+> Se não aparecer nem no fim da lista, atualize a árvore (refresh) e
+> procure no grupo de nomes citados/entre aspas.
+
 **Prefere nomes no estilo Firebird (sem aspas/maiúsculos)?** Configure o
 `alias` do modelo/seed em maiúsculas — o dbt criará `"TABELA"`, que é
 exatamente o nome que uma consulta sem aspas encontra:
