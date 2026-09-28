@@ -48,5 +48,4 @@ include = ["dbt.adapters.firebird", "dbt.adapters.firebird.*", "dbt.include.fire
 "dbt.include.firebird" = ["dbt_project.yml", "profile_template.yml", "macros/**/*.sql"]
 
 [tool.pytest.ini_options]
-env_files = ["test.env"]
 testpaths = ["tests"]

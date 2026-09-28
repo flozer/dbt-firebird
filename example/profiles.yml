@@ -5,7 +5,7 @@ dbt_firebird_example:
       type: firebird
       host: localhost
       port: 3050
-      path: D:/Dados/dbt-firebird/example/db_example.fdb
+      path: C:/dados/dbt_example.fdb   # ajuste para o caminho do SEU banco de teste
       user: SYSDBA
       password: masterkey
       charset: UTF8

@@ -6,7 +6,8 @@ import firebird.driver as fdb
 pytest_plugins = ["dbt.tests.fixtures.project"]
 
 TEST_DB_PATH = os.environ.get(
-    "FIREBIRD_TEST_DB_PATH", "D:/Dados/dbt-firebird/tests/db_test.fdb"
+    "FIREBIRD_TEST_DB_PATH",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "db_test.fdb"),
 )
 
 
@@ -44,9 +45,11 @@ def _wipe_database(path: str) -> None:
 
 
 def _ensure_database(path: str) -> None:
-    if not os.path.exists(path):
+    try:
         con = fdb.create_database(f"localhost:{path}", user="SYSDBA", password="masterkey")
         con.close()
+    except fdb.Error:
+        pass  # já existe
     _wipe_database(path)
 
 
