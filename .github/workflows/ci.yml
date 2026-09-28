@@ -58,4 +58,12 @@ jobs:
           sleep 10
 
       - name: Run adapter test suites
-        run: pytest tests/adapter -v --no-header
+        run: |
+          # Firebird 3 limita identificadores a 31 bytes; a suíte oficial usa
+          # o modelo "models__downstream_from_seed_actual" (35 chars), que o
+          # engine FB3 não consegue armazenar. Limitação documentada no README.
+          ARGS=""
+          if [ "${{ matrix.firebird-version }}" = "v3" ]; then
+            ARGS="--deselect tests/adapter/test_firebird.py::TestBasicSeed"
+          fi
+          pytest tests/adapter -v --no-header $ARGS
