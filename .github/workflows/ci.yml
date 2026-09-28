@@ -28,7 +28,7 @@ jobs:
       FIREBIRD_TEST_DB_PATH: /firebird/data/db_test.fdb
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
