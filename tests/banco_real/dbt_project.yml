@@ -1,0 +1,16 @@
+name: banco_real_test
+version: "1.0"
+config-version: 2
+profile: banco_real
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+
+models:
+  banco_real_test:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

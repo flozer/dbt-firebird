@@ -1,0 +1,7 @@
+id,customer_id,status,order_date,total
+1,1,completed,2026-01-10,150.50
+2,1,completed,2026-02-14,80.00
+3,2,pending,2026-03-01,42.75
+4,3,completed,2026-03-15,220.10
+5,2,completed,2026-04-02,19.99
+6,4,cancelled,2026-04-20,60.00

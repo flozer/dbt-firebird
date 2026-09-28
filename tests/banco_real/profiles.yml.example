@@ -1,0 +1,14 @@
+# Copie este arquivo para profiles.yml e ajuste os valores da SUA base.
+# O profiles.yml e ignorado pelo git para nao vazar caminhos/credenciais.
+banco_real:
+  target: dev
+  outputs:
+    dev:
+      type: firebird
+      host: localhost
+      port: 3050
+      path: D:/caminho/da/sua/base.fdb
+      user: SYSDBA
+      password: masterkey
+      charset: WIN1252   # use WIN1252/NONE para bases legadas; UTF8 para bases novas
+      threads: 1

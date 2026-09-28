@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: dbt_stg_eng_unidade
+    description: "View sobre a tabela real ENG_UNIDADE (unidades de medida)"
+    columns:
+      - name: unidade_tag
+        tests:
+          - not_null
+          - unique   # esperado FALHAR: a base real tem 1 tag duplicada (59 linhas, 58 distintas)
+      - name: unidade_descricao
+        tests:
+          - not_null
+  - name: dbt_stg_eng_grumat
+    description: "View sobre a tabela real ENG_GRUMAT (grupos de material)"
+    columns:
+      - name: grupo_tag
+        tests:
+          - unique
+          - not_null
