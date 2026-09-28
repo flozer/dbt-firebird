@@ -123,6 +123,7 @@ meu_projeto:
 | `password` | sim | — | Senha (padrão de instalação: `masterkey`) |
 | `charset` | não | `UTF8` | Charset da conexão — ver tabela abaixo |
 | `role` | não | — | Role (papel) do Firebird, se você usa |
+| `lock_timeout` | não | `10` | Segundos que um statement espera por lock de outra transação antes de falhar (`0` = não espera; `-1` = espera indefinidamente) |
 | `threads` | não | `1` | Execuções paralelas. **1 é recomendado** (o Firebird não tem schemas; mais threads compartilham o mesmo namespace) |
 | `database` | não | nome do arquivo | Rótulo lógico interno do dbt — não afeta o SQL gerado |
 | `schema` | não | `main` | Rótulo lógico interno do dbt — **o Firebird não tem schemas**; nunca é usado no SQL |
@@ -381,6 +382,7 @@ repetidas sem mudanças não alteram nada.
 | `cannot delete COLUMN ... there are dependencies` | Tentando recriar uma tabela que tem views dependentes | Re-rodar sem mudar colunas usa o swap atômico (sem drop). Mudando colunas, derrube as views dependentes antes |
 | `Token unknown - line 1, column 13 - SELECT` (ou similar) | Modelo com SQL sem `FROM` (o Firebird exige) | Adicione `from RDB$DATABASE` à query |
 | `field ... exceeds maximum record size` | Modelo com muitas colunas de texto largas somando > 64 KB por linha | Reduza os VARCHARs com `cast(coluna as varchar(200))` no modelo |
+| `deadlock / update conflicts with concurrent update` | Outra transação (aplicação, outro modelo em paralelo, trigger de auditoria) alterou a mesma linha/página enquanto o dbt escrevia | **O adaptador já contorna automaticamente**: transações em READ COMMITTED + `lock_timeout` de espera + até 3 tentativas com backoff. Se ainda ocorrer, reduza a concorrência (`threads: 1`) ou aumente `lock_timeout` no profile |
 | Nomes de modelo com +31 caracteres no Firebird 3 | Limite de identificador de 31 bytes do FB3 | Encurte o nome (FB4/5 aceitam 63) |
 | `Table unknown` logo após `CREATE` no mesmo script | DDL não é visível ao DML na mesma transação | É o dbt que orquestra — se acontecer em hooks, comite entre eles |
 
@@ -391,7 +393,10 @@ O Firebird tem características que exigiram adaptações específicas:
 1. **Snapshot de metadados**: statements compilam contra o estado de metadados
    *commitado* antes da transação — DDL executado na mesma transação não é
    visível para o DML seguinte. Por isso o adaptador commita entre CREATE e
-   INSERT (duas transações por materialização).
+   INSERT (duas transações por materialização). Os dados, por outro lado, são
+   lidos em **READ COMMITTED** (com espera limitada por `lock_timeout`) —
+   isolamento adequado a ETL concorrente, que evita o clássico
+   "update conflicts with concurrent update" do SNAPSHOT.
 
 2. **Sem `CREATE TABLE AS SELECT`**: o adaptador *prepara* (PREPARE) a query do
    modelo — sem executá-la — para extrair nomes e tipos de colunas, gera o

@@ -3,6 +3,19 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/)
 e versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [Não lançado]
+
+### Adicionado
+- Opção `lock_timeout` no profile (padrão 10s): tempo de espera por lock de
+  outra transação antes de falhar.
+- Retry automático (3 tentativas com backoff) para conflitos de
+  lock/concorrência do Firebird (deadlock, lock time-out, update conflict).
+
+### Alterado
+- Transações usam **READ COMMITTED** (antes SNAPSHOT): updates concorrentes
+  sobre a mesma linha esperam e aplicam sobre a versão mais recente, em vez
+  de falhar com "update conflicts with concurrent update".
+
 ## [0.1.0] - 2026-09-26
 
 ### Adicionado

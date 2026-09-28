@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import os
+import time
 import traceback
 from contextlib import contextmanager
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple, Type
 
 import firebird.driver as fdb
+from firebird.driver import Isolation, tpb as build_tpb
 
 from dbt.adapters.contracts.connection import (
     AdapterResponse,
@@ -37,6 +39,9 @@ class FirebirdCredentials(Credentials):
     password: Optional[str] = None
     charset: str = "UTF8"
     role: Optional[str] = None
+    # segundos de espera por lock antes de falhar (0 = não espera; -1 = espera
+    # indefinidamente)
+    lock_timeout: int = 10
 
     _ALIASES = {
         "dbname": "database",
@@ -73,6 +78,7 @@ class FirebirdCredentials(Credentials):
             "user",
             "charset",
             "role",
+            "lock_timeout",
         )
 
     @property
@@ -85,6 +91,17 @@ class FirebirdCredentials(Credentials):
 class FirebirdConnectionManager(SQLConnectionManager):
     TYPE = "firebird"
 
+    # erros de lock/concorrência que valem retry (deadlock real, lock
+    # time-out e update conflict que sobrou mesmo em READ COMMITTED)
+    _LOCK_CONFLICT_MARKERS = (
+        "deadlock",
+        "lock time-out",
+        "lock timeout",
+        "lock conflict on no wait transaction",
+        "update conflicts with concurrent update",
+    )
+    _LOCK_RETRY_ATTEMPTS = 3
+
     @classmethod
     def open(cls, connection: Connection) -> Connection:
         if connection.state == ConnectionState.OPEN:
@@ -93,13 +110,25 @@ class FirebirdConnectionManager(SQLConnectionManager):
         credentials: FirebirdCredentials = connection.credentials
 
         def connect():
-            return fdb.connect(
+            handle = fdb.connect(
                 credentials.dsn,
                 user=credentials.user,
                 password=credentials.password,
                 charset=credentials.charset,
                 role=credentials.role,
             )
+            # READ COMMITTED + WAIT com lock_timeout: transações concorrentes
+            # que alteram a mesma linha esperam e aplicam sobre a versão mais
+            # recente (o default SNAPSHOT falha com "update conflicts with
+            # concurrent update" nesse cenário)
+            transaction_tpb = build_tpb(
+                Isolation.READ_COMMITTED_NO_RECORD_VERSION,
+                lock_timeout=credentials.lock_timeout,
+            )
+            handle.default_tpb = transaction_tpb
+            handle.main_transaction.default_tpb = transaction_tpb
+            handle.query_transaction.default_tpb = transaction_tpb
+            return handle
 
         # retry_connection registra o handle/estado e converte falhas
         # persistentes em FailedToConnectError; erros transientes (rede,
@@ -115,6 +144,51 @@ class FirebirdConnectionManager(SQLConnectionManager):
     def cancel(self, connection: Connection) -> None:
         # firebird-driver nao expoe cancelamento assincrono de statement.
         logger.debug("Cancel not supported for Firebird connections")
+
+    def add_query(
+        self,
+        sql: str,
+        auto_begin: bool = True,
+        bindings: Optional[Any] = None,
+        abridge_sql_log: bool = False,
+        retryable_exceptions: Tuple[Type[Exception], ...] = tuple(),
+        retry_limit: int = 1,
+    ):
+        """Como o SQLAdapter, com retry automático para conflitos de
+        lock/concorrência do Firebird: descarta o trabalho parcial da
+        tentativa (rollback), espera com backoff e reexecuta o statement."""
+        delay = 1.0
+        for attempt in range(self._LOCK_RETRY_ATTEMPTS):
+            try:
+                return super().add_query(
+                    sql,
+                    auto_begin=auto_begin,
+                    bindings=bindings,
+                    abridge_sql_log=abridge_sql_log,
+                    retryable_exceptions=retryable_exceptions,
+                    retry_limit=retry_limit,
+                )
+            except DbtRuntimeError as exc:
+                message = str(exc).lower()
+                is_lock_conflict = any(
+                    marker in message for marker in self._LOCK_CONFLICT_MARKERS
+                )
+                if not is_lock_conflict or attempt >= self._LOCK_RETRY_ATTEMPTS - 1:
+                    raise
+                connection = self.get_thread_connection()
+                handle = getattr(connection, "handle", None)
+                tx = getattr(handle, "main_transaction", None)
+                if tx is not None and tx.is_active():
+                    handle.rollback()
+                logger.warning(
+                    "Firebird lock conflict (tentativa {} de {}); repetindo em {:.1f}s: {}",
+                    attempt + 1,
+                    self._LOCK_RETRY_ATTEMPTS,
+                    delay,
+                    str(exc).strip().splitlines()[0],
+                )
+                time.sleep(delay)
+                delay *= 2
 
     @contextmanager
     def exception_handler(self, sql: str):
