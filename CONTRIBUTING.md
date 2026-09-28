@@ -18,6 +18,14 @@ python -m venv .venv
 .venv/Scripts/pip install -e .[dev]   # Linux/macOS: .venv/bin/pip install -e .[dev]
 ```
 
+> **Nota sobre instalação editável:** com `pip install -e`, o `dbt --version`
+> e o `dbt init` podem **não listar** o adaptador — a enumeração do dbt-core
+> usa varredura física de `dbt/adapters/*/__version__.py`, que instaladores
+> editáveis modernos (finder) não expõem. Os testes `pytest` continuam
+> funcionando (importam o adaptador diretamente). Para testar o `dbt init`
+> ou o `dbt --version` com o código atual, instale não-editável:
+> `pip install --force-reinstall --no-deps .`
+
 ## Testes
 
 ```bash

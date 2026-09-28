@@ -88,6 +88,12 @@ Ou por qualquer ferramenta gráfica (IBExpert, FlameRobin, DBeaver).
 
 ## Configurando a conexão (profiles.yml)
 
+> **Atalho:** se você está criando um projeto **novo**, o `dbt init` faz isso
+> para você — ele lista `firebird` como opção, pergunta host, porta, caminho,
+> usuário, senha, charset e threads, grava o `profiles.yml` e já roda o
+> `dbt debug` no final. A referência completa dos campos está abaixo, útil
+> para conferir, ajustar ou configurar projetos existentes manualmente.
+
 O dbt guarda as conexões em `~/.dbt/profiles.yml` (Windows:
 `C:\Users\SEU_USUARIO\.dbt\profiles.yml`). Exemplo mínimo para uma base local:
 

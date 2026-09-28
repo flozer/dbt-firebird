@@ -1,13 +1,25 @@
 fixed:
   type: firebird
-  host: localhost
-  port: 3050
-  user: '{{ env_var("FB_USER") }}'
-  password: '{{ env_var("FB_PASSWORD") }}'
 prompts:
+  host:
+    hint: 'host do servidor Firebird (para base local, Enter aceita localhost)'
+    default: 'localhost'
+  port:
+    hint: 'porta do servidor (padrão 3050)'
+    type: int
+    default: 3050
   path:
-    hint: 'Caminho do arquivo .fdb visto PELO SERVIDOR (ex: D:/dados/mydb.fdb)'
+    hint: 'caminho do arquivo .fdb VISTO PELO SERVIDOR, com barras / (ex.: C:/dados/base.fdb)'
+  user:
+    hint: 'usuário do banco (padrão de instalação: SYSDBA)'
+    default: 'SYSDBA'
+  password:
+    hint: 'senha (não será exibida ao digitar)'
+    hide_input: true
+  charset:
+    hint: 'UTF8 para bases novas; WIN1252 para bases legadas com acentuação'
+    default: 'UTF8'
   threads:
-    hint: 'Numero de threads (1 recomendado)'
+    hint: 'execuções paralelas (1 é recomendado)'
     type: int
     default: 1
