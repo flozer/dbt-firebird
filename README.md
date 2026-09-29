@@ -14,7 +14,7 @@
     <a href="https://github.com/flozer/dbt-firebird/releases/tag/v0.1.1"><img alt="release v0.1.1" src="https://img.shields.io/badge/release-v0.1.1-blue.svg"></a>
     <a href="https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/flozer/dbt-firebird/actions/workflows/ci.yml/badge.svg"></a>
     <a href="https://pypi.org/project/dbt-firebird/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/dbt-firebird?logo=pypi&logoColor=white"></a>
-    <a href="https://pypi.org/project/dbt-firebird/"><img alt="PyPI downloads/mês" src="https://img.shields.io/pypi/dm/dbt-firebird?logo=pypi&logoColor=white"></a>
+    <a href="https://pypi.org/project/dbt-firebird/"><img alt="PyPI downloads/mês" src="https://img.shields.io/pypi/dm/dbt-firebird?logo=pypi&logoColor=white&cacheSeconds=3600"></a>
   </p>
 </div>
 
