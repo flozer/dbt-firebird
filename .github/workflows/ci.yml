@@ -7,6 +7,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  static-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install bandit
+        run: pip install bandit
+      - name: Static security analysis (bandit)
+        # B608 (SQL via construção de strings) é inerente a um adaptador que
+        # renderiza SQL para os modelos do dbt — todos os VALORES são
+        # parametrizados (?) e identificadores são quotados pelo próprio dbt.
+        # Demais checks (B105, B110, etc.) continuam obrigatórios.
+        run: bandit -r dbt/adapters/firebird/ --skip B608
+
   test:
     runs-on: ubuntu-latest
     strategy:

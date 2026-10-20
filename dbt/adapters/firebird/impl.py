@@ -157,7 +157,7 @@ class FirebirdAdapter(SQLAdapter):
             try:
                 conn.handle.rollback()
             except Exception:
-                pass
+                pass  # nosec B110
             logger.debug("run_sql_for_tests failed: {}", sql)
             print(sql)
             print(e)
@@ -215,7 +215,7 @@ from rdb$database
             try:
                 stmt.free()
             except Exception:
-                pass
+                pass  # nosec B110
 
         # O tamanho informado pelo driver no buffer de mensagem superestima o
         # número de caracteres (varia com o charset); para colunas que vêm de
@@ -240,6 +240,7 @@ from rdb$database
         for relation, fields in by_relation.items():
             placeholders = ", ".join("?" for _ in fields)
             lookup = connection.handle.cursor()
+            # placeholders ? para todos os valores; só o IN() usa contagem de campos
             lookup.execute(
                 "select rf.rdb$field_name, fld.rdb$field_length, cs.rdb$bytes_per_character "
                 "from rdb$relation_fields rf "

@@ -41,6 +41,7 @@ dev = [
     "dbt-tests-adapter>=1.6,<2.0",
     "pytest>=7",
     "pytest-dotenv",
+    "bandit",
 ]
 
 [tool.setuptools.packages.find]

@@ -45,7 +45,8 @@ class FirebirdCredentials(Credentials):
 
     _ALIASES = {
         "dbname": "database",
-        "pass": "password",
+        # alias de campo do profile (não é uma senha)
+        "pass": "password",  # nosec B105
         "db_file": "path",
     }
 
