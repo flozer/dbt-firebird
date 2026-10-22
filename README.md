@@ -64,6 +64,11 @@ Isso instala o adaptador **e** as dependências (`dbt-adapters`,
 
 ```bash
 pip install dbt-core
+```
+
+> Nota: instalar um adaptador **não** instala o `dbt-core` automaticamente —
+> adaptadores e versões do core são desacoplados para não sobrescrever
+> instalações existentes do dbt.
 dbt --version
 ```
 
@@ -326,9 +331,10 @@ Na primeira execução cria a tabela completa. Nas seguintes, roda a query
 | `delete+insert` | Apaga as linhas com as mesmas chaves e reinsere | `unique_key` |
 | `merge` | Atualiza as linhas existentes e insere as novas (MERGE nativo) | `unique_key` |
 
-Também suporta `on_schema_change` (`ignore`/`fail`/`append`/`sync_all`) para
-quando as colunas do modelo mudam, e `full_refresh=True`/`dbt run
---full-refresh` para reconstruir do zero.
+Também suporta `on_schema_change` (`ignore`/`fail`/`append_new_columns`/`sync_all_columns`)
+para quando as colunas do modelo mudam, e `full_refresh=True`/`dbt run
+--full-refresh` para reconstruir do zero. Atenção: um valor inválido é
+silenciosamente trocado por `ignore`.
 
 ### `seed` — CSV para tabela
 
